@@ -1,3 +1,6 @@
+import streamlit as st
+import pandas as pd
+
 # Function to calculate loan schedule
 def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment):
     # Convert annual interest rate to monthly rate
