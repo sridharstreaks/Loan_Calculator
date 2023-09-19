@@ -22,7 +22,8 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
             moratorium_payment = moratorium_monthly_payment  # Fixed initial payment during the interest-only period
         elif monthly_payment == 0:
             # Use the standard EMI for the current month
-            standard_emi = calculate_standard_emi(remaining_balance, annual_interest_rate, tenure_years - (month // 12), interest_only_months - month, moratorium_monthly_payment)
+            remaining_months = total_months - month + 1
+            standard_emi = calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_months, 0, moratorium_monthly_payment)
             moratorium_payment = standard_emi
         else:
             moratorium_payment = monthly_payment
@@ -49,12 +50,12 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
     return pd.DataFrame(schedule)
 
 # Function to calculate the standard EMI for a given remaining balance
-def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_tenure_years, remaining_interest_only_months, moratorium_monthly_payment):
+def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_tenure_months, remaining_interest_only_months, moratorium_monthly_payment):
     # Convert annual interest rate to monthly rate
     monthly_interest_rate = (annual_interest_rate / 12) / 100
 
     # Calculate the EMI using the standard formula for the remaining balance
-    emi = (remaining_balance * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -(remaining_tenure_years * 12 - remaining_interest_only_months))
+    emi = (remaining_balance * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -remaining_tenure_months)
 
     return emi
     
