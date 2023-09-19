@@ -20,8 +20,6 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
         # Determine the moratorium payment for the month
         if month <= interest_only_months:
             moratorium_payment = moratorium_monthly_payment  # Fixed initial payment during the interest-only period
-        elif monthly_payment == 0:
-            return "Loan won't be settled"
         else:
             moratorium_payment = monthly_payment
 
@@ -44,6 +42,10 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
         if remaining_balance <= 0:
             break
 
+    # If the loan is not settled within 120 months, return a message
+    if len(schedule) >= 120:
+        return "Loan won't be settled within 10 years (120 months)."
+
     return pd.DataFrame(schedule)
 
 # Streamlit app
@@ -53,7 +55,7 @@ def main():
 
     # Sidebar inputs
     loan_amount = st.sidebar.number_input("Loan Amount (INR)", min_value=0)
-    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0.0,step=1e-4,format="%.3f")
+    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0, step=1e-4, format="%.4f")
     tenure_years = st.sidebar.number_input("Loan Tenure (years)", min_value=0)
     interest_only_months = st.sidebar.number_input("Interest-only Months", min_value=0)
     monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0)
@@ -63,9 +65,13 @@ def main():
         # Calculate the loan schedule
         schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
 
-        # Display the loan schedule
-        st.subheader("Loan Repayment Schedule")
-        st.dataframe(schedule_result)
+        # Check if it's a string message indicating loan won't be settled
+        if isinstance(schedule_result, str):
+            st.error(schedule_result)  # Display the error message
+        else:
+            # Display the loan schedule
+            st.subheader("Loan Repayment Schedule")
+            st.dataframe(schedule_result)
 
 if __name__ == "__main__":
     main()
