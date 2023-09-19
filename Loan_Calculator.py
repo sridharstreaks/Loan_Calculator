@@ -48,7 +48,6 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
 
     return pd.DataFrame(schedule)
 
-# Streamlit app
 def main():
     st.title("Loan Repayment Schedule Calculator")
     st.sidebar.title("Loan Parameters")
@@ -69,6 +68,15 @@ def main():
         if isinstance(schedule_result, str):
             st.error(schedule_result)  # Display the error message
         else:
+            # Calculate total interest paid and total loan taken
+            total_interest_paid = schedule_result['Monthly Interest'].sum()
+            total_loan_taken = loan_amount + total_interest_paid
+
+            # Display total interest paid and total loan taken
+            st.subheader("Summary")
+            st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
+            st.write(f"Total Loan Taken: {round(total_loan_taken, 2)} INR")
+
             # Display the loan schedule
             st.subheader("Loan Repayment Schedule")
             st.dataframe(schedule_result)
