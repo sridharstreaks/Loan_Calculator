@@ -55,7 +55,7 @@ def main():
 
     # Sidebar inputs
     loan_amount = st.sidebar.number_input("Loan Amount (INR)", min_value=0)
-    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0, step=1e-3, format="%.2f")
+    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0.0, step=1e-3, format="%.2f")
     tenure_years = st.sidebar.number_input("Loan Tenure (years)", min_value=0)
     interest_only_months = st.sidebar.number_input("Interest-only Months", min_value=0)
     monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0)
