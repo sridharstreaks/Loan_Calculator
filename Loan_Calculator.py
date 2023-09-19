@@ -58,34 +58,27 @@ def main():
     annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0.0, step=1e-3, format="%.2f")
     tenure_years = st.sidebar.number_input("Loan Tenure (years)", min_value=0)
     interest_only_months = st.sidebar.number_input("Interest-only Months", min_value=0)
-    monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0)
-    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR)", min_value=0)
+    monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0, format="%.2f")
+    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR)", min_value=0, format="%.2f")
 
     if st.sidebar.button("Calculate"):
         # Calculate the loan schedule
         schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
 
-        # Check if it's a string message indicating loan can't be settled
+        # Check if it's a string message indicating loan won't be settled
         if isinstance(schedule_result, str):
-            st.error(schedule_result)  # Display the error message
+            if monthly_payment == 0:
+                st.warning("Using standard EMI for the current month.")
+            else:
+                st.error(schedule_result)  # Display the error message
         else:
             # Calculate total interest paid and total loan taken
             total_interest_paid = schedule_result['Monthly Interest'].sum()
-            
+
             # Display total interest paid and total loan taken
             st.subheader("Summary")
             st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
             st.write(f"Total Loan Taken: {round(loan_amount, 2)} INR")
-
-            # Check if monthly_payment is less than the current month's EMI
-            current_month = len(schedule_result)
-            current_month_emi = schedule_result.loc[current_month - 1, "Moratorium Payment"]
-            
-            if monthly_payment == 0:
-                monthly_payment = current_month_emi
-            elif monthly_payment < current_month_emi:
-                st.warning("Loan may not be settled with the provided monthly payment.")
-                st.warning(f"Please input a value greater than or equal to {current_month_emi} INR.")
 
             # Display the loan schedule
             st.subheader("Loan Repayment Schedule")
