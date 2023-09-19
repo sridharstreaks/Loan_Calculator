@@ -61,7 +61,7 @@ def main():
 
     if st.sidebar.button("Calculate"):
         # Calculate the loan schedule
-        schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, monthly_payment)
+        schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
 
         # Display the loan schedule
         st.subheader("Loan Repayment Schedule")
