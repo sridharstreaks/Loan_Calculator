@@ -38,7 +38,7 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
             "Month": month,
             "Opening Balance": round(remaining_balance + principal_payment, 2),
             "Monthly Interest": round(monthly_interest, 2),
-            "Moratorium Payment": moratorium_payment,
+            "Moratorium Payment": round(moratorium_payment, 2),  # Round the EMI to 2 decimal places
             "Principal Payment": round(principal_payment, 2),
             "Closing Balance": round(remaining_balance, 2)
         })
