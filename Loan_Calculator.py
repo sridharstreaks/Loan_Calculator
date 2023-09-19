@@ -70,7 +70,7 @@ def main():
         else:
             # Calculate total interest paid and total loan taken
             total_interest_paid = schedule_result['Monthly Interest'].sum()
-            total_loan_taken = loan_amount + total_interest_paid
+            total_loan_taken = loan_amount
 
             # Display total interest paid and total loan taken
             st.subheader("Summary")
