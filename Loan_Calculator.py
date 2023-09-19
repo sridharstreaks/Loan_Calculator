@@ -1,6 +1,3 @@
-import streamlit as st
-import pandas as pd
-
 # Function to calculate loan schedule
 def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment):
     # Convert annual interest rate to monthly rate
@@ -20,6 +17,10 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
         # Determine the moratorium payment for the month
         if month <= interest_only_months:
             moratorium_payment = moratorium_monthly_payment  # Fixed initial payment during the interest-only period
+        elif monthly_payment == 0:
+            # Use the standard EMI for the current month
+            standard_emi = calculate_standard_emi(remaining_balance, annual_interest_rate, tenure_years - (month // 12), interest_only_months - month, moratorium_monthly_payment)
+            moratorium_payment = standard_emi
         else:
             moratorium_payment = monthly_payment
 
@@ -41,10 +42,6 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
 
         if remaining_balance <= 0:
             break
-
-    # If the loan is not settled within 120 months, return a message
-    if len(schedule) >= 120:
-        return "Loan won't be settled within 10 years (120 months)."
 
     return pd.DataFrame(schedule)
 
