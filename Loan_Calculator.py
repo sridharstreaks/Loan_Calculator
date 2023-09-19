@@ -55,22 +55,26 @@ def main():
 
     # Sidebar inputs
     loan_amount = st.sidebar.number_input("Loan Amount (INR)", min_value=0)
-    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0.0, step=1e-3, format="%.2f")
+    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0, step=1e-3, format="%.2f")
     tenure_years = st.sidebar.number_input("Loan Tenure (years)", min_value=0)
     interest_only_months = st.sidebar.number_input("Interest-only Months", min_value=0)
-    monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0, format="%.2f")
-    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR)", min_value=0, format="%.2f")
+    monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0)
+    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR)", min_value=0)
 
     if st.sidebar.button("Calculate"):
-        # Calculate the loan schedule
-        schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
+        if monthly_payment == 0:
+            # Display a message indicating the standard EMI will be used
+            st.warning("Using standard EMI for the current month.")
+            # Calculate the loan schedule with standard EMI for the current month
+            standard_emi = calculate_standard_emi(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment)
+            schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, standard_emi)
+        else:
+            # Calculate the loan schedule with the user-provided monthly payment
+            schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
 
         # Check if it's a string message indicating loan won't be settled
         if isinstance(schedule_result, str):
-            if monthly_payment == 0:
-                st.warning("Using standard EMI for the current month.")
-            else:
-                st.error(schedule_result)  # Display the error message
+            st.error(schedule_result)  # Display the error message
         else:
             # Calculate total interest paid and total loan taken
             total_interest_paid = schedule_result['Monthly Interest'].sum()
@@ -83,6 +87,18 @@ def main():
             # Display the loan schedule
             st.subheader("Loan Repayment Schedule")
             st.dataframe(schedule_result)
+
+def calculate_standard_emi(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment):
+    # Convert annual interest rate to monthly rate
+    monthly_interest_rate = (annual_interest_rate / 12) / 100
+
+    # Convert tenure in years to months
+    total_months = tenure_years * 12
+
+    # Calculate the EMI using the standard formula
+    emi = (loan_amount * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -total_months)
+
+    return emi
 
 if __name__ == "__main__":
     main()
