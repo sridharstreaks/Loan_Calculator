@@ -57,6 +57,7 @@ def main():
     tenure_years = st.sidebar.number_input("Loan Tenure (years)", min_value=0)
     interest_only_months = st.sidebar.number_input("Interest-only Months", min_value=0)
     monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0)
+    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR)", min_value=0)
 
     if st.sidebar.button("Calculate"):
         # Calculate the loan schedule
