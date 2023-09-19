@@ -53,14 +53,11 @@ def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_te
     # Convert annual interest rate to monthly rate
     monthly_interest_rate = (annual_interest_rate / 12) / 100
 
-    # Convert tenure in years to months
-    total_months = remaining_tenure_years * 12
-
-    # Calculate the EMI using the standard formula
-    emi = (remaining_balance * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -total_months)
+    # Calculate the EMI using the standard formula for the remaining balance
+    emi = (remaining_balance * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -(remaining_tenure_years * 12 - remaining_interest_only_months))
 
     return emi
-
+    
 #Streamlit app
 def main():
     st.title("Loan Repayment Schedule Calculator")
