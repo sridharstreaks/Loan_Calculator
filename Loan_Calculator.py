@@ -65,18 +65,18 @@ def main():
         # Calculate the loan schedule
         schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
 
-        # Calculate total interest paid and total loan taken
-        total_interest_paid = schedule_result['Monthly Interest'].sum()
-        
-        # Display total interest paid and total loan taken
-        st.subheader("Summary")
-        st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
-        st.write(f"Total Loan Taken: {round(loan_amount, 2)} INR")
-
         # Check if it's a string message indicating loan can't be settled
         if isinstance(schedule_result, str):
             st.error(schedule_result)  # Display the error message
         else:
+            # Calculate total interest paid and total loan taken
+            total_interest_paid = schedule_result['Monthly Interest'].sum()
+            
+            # Display total interest paid and total loan taken
+            st.subheader("Summary")
+            st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
+            st.write(f"Total Loan Taken: {round(loan_amount, 2)} INR")
+
             # Check if monthly_payment is less than the current month's EMI
             current_month = len(schedule_result)
             current_month_emi = schedule_result.loc[current_month - 1, "Moratorium Payment"]
