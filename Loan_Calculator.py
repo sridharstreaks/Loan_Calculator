@@ -59,7 +59,7 @@ def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_te
 
     return emi
     
-#Streamlit app
+# Streamlit app
 def main():
     st.title("Loan Repayment Schedule Calculator")
     st.sidebar.title("Loan Parameters")
@@ -71,6 +71,12 @@ def main():
     interest_only_months = st.sidebar.number_input("Interest-only Months", min_value=0)
     monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0)
     moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR)", min_value=0)
+    
+    # Add input for bulk payment
+    bulk_payment_option = st.sidebar.checkbox("Make Bulk Payment")
+    if bulk_payment_option:
+        bulk_payment_amount = st.sidebar.number_input("Bulk Payment Amount (INR)", min_value=0)
+        bulk_payment_month = st.sidebar.number_input("Month for Bulk Payment", min_value=1, max_value=tenure_years * 12)
 
     if st.sidebar.button("Calculate"):
         if monthly_payment == 0:
@@ -82,6 +88,10 @@ def main():
         else:
             # Calculate the loan schedule with the user-provided monthly payment
             schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
+
+        # Check if a bulk payment is specified and calculate the loan schedule with it
+        if bulk_payment_option and bulk_payment_amount > 0:
+            schedule_result = apply_bulk_payment(schedule_result, bulk_payment_month, bulk_payment_amount)
 
         # Check if it's a string message indicating loan won't be settled
         if isinstance(schedule_result, str):
@@ -99,17 +109,14 @@ def main():
             st.subheader("Loan Repayment Schedule")
             st.dataframe(schedule_result)
 
-def calculate_standard_emi(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment):
-    # Convert annual interest rate to monthly rate
-    monthly_interest_rate = (annual_interest_rate / 12) / 100
-
-    # Convert tenure in years to months
-    total_months = tenure_years * 12
-
-    # Calculate the EMI using the standard formula
-    emi = (loan_amount * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -total_months)
-
-    return emi
+# Function to apply bulk payment to the loan schedule
+def apply_bulk_payment(schedule, bulk_payment_month, bulk_payment_amount):
+    if bulk_payment_month <= len(schedule):
+        # Deduct the bulk payment from the closing balance of the specified month
+        schedule.loc[bulk_payment_month - 1, "Closing Balance"] -= bulk_payment_amount
+        return schedule
+    else:
+        return "Invalid bulk payment month. Please select a valid month."
 
 if __name__ == "__main__":
     main()
