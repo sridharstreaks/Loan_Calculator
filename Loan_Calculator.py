@@ -114,6 +114,8 @@ def apply_bulk_payment(schedule, bulk_payment_month, bulk_payment_amount):
     if bulk_payment_month <= len(schedule):
         # Deduct the bulk payment from the closing balance of the specified month
         schedule.loc[bulk_payment_month - 1, "Closing Balance"] -= bulk_payment_amount
+        # Update the principal payment to include the bulk payment
+        schedule.loc[bulk_payment_month - 1, "Principal Payment"] += bulk_payment_amount
         return schedule
     else:
         return "Invalid bulk payment month. Please select a valid month."
