@@ -13,7 +13,7 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
     remaining_balance = loan_amount
     schedule = []
 
-        # Inside the loop for calculating the loan schedule
+    # Inside the loop for calculating the loan schedule
     for month in range(1, total_months + 1):
         # Calculate interest for the month
         monthly_interest = remaining_balance * monthly_interest_rate
@@ -49,7 +49,7 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
             "Principal Payment": round(principal_payment, 2),
             "Closing Balance": round(remaining_balance, 2)
         })
-
+    
         if remaining_balance <= 0:
             break
 
