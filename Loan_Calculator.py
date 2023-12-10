@@ -53,7 +53,6 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
             "Monthly Interest": round(monthly_interest, 2) if remaining > 0 else 0,
             "EMI": round(emi, 2) if remaining > 0 else 0,
             "Monthly Payment": round((monthly_amount if monthly_amount > 0 else emi) if remaining > 0 else 0, 2),
-            "Principal/EMI Payment": round(principle, 2) if remaining > 0 else 'Balance Adjusted',
             "Closing Balance": round(remaining, 2) if remaining > 0 else 0
         })
 
