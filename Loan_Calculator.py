@@ -1,95 +1,62 @@
 import streamlit as st
 import pandas as pd
 
-def amortization(loan,interest_rate,tenure,monthly_amount,moro_months,moro_pay):
-  monthly_interest_rate=(interest_rate/12)/100
-  tenure_months=tenure*12
-  
-  remaining=loan
-  
-  schedule= []
-  
-  while moro_months>0:
-    
-    schedule.append({
-        "Month": tenure_months,
-        "Opening Balance": remaining
-        })
-    
-    monthly_interest=remaining*monthly_interest_rate
-      
-    emi = remaining * monthly_interest_rate * ((1+monthly_interest_rate)**tenure_months)/((1+monthly_interest_rate)**tenure_months - 1)
-      
-    monthly_remain=emi-monthly_interest
-      
-    added_principle=monthly_remain-moro_pay+monthly_interest
-    #print(f'added principle: {added_principle}')
-    
-    remaining+=added_principle
-    #print(f'new principle: {remaining}')
-    
-    schedule.append({
-        "Monthly Interest": monthly_interest,
-        "EMI": emi,
-        "added_principle": added_principle,
-        "Closing Balance": remaining if remaining > 0 else 0
-        })
-    
-    
-    tenure_months-=1
-    moro_months-=1
-    
-  total_interest_paid = 0
-  
-  while tenure_months>0:
-    #print(f'starting: {remaining}')
-    
-    monthly_interest=remaining*monthly_interest_rate
-    #print(f'monthly interest: {monthly_interest}')
-    
-    emi = remaining * monthly_interest_rate * ((1+monthly_interest_rate)**tenure_months)/((1+monthly_interest_rate)**tenure_months - 1)
-    #print(f'EMI: {emi}')
-    
-    schedule.append({
-        "Month": tenure_months,
-        "Opening Balance": remaining,
-        "Monthly Interest": monthly_interest,
-         "EMI": emi
-        })
-    
-    if monthly_amount>0:
-      
-      principle=monthly_amount-monthly_interest
-      #print(f'principle: {principle}')
-      
-    else:
-      
-      principle=emi-monthly_interest
-      #print(f'principle: {principle}')
-    
-    
-    remaining=remaining-principle
-    #print(f'balance: {remaining}')
-    
-    total_interest_paid += monthly_interest
-    
-    tenure_months-=1
-    #print(f'tenure: {tenure_months}')
-    
-    
-    # Append to the schedule
-    schedule.append({
-        "Monthly Payment": monthly_amount if monthly_amount > 0 else emi,
-        "Principal/emi Payment": principle if remaining > 0 else 'balance adjusted',
-        "Closing Balance": remaining if remaining > 0 else 0
-    })
-    
-    if remaining<0:
-      break
-  
-  return schedule, print(f'Loan completed {tenure_months} months before tenure'),total_interest_paid
+def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_pay):
+    monthly_interest_rate = (interest_rate / 12) / 100
+    tenure_months = tenure * 12
+    remaining = loan
+    schedule = []
 
+    while moro_months > 0:
+        monthly_interest = remaining * monthly_interest_rate
+        emi = remaining * monthly_interest_rate * ((1 + monthly_interest_rate) ** tenure_months) / (
+                    (1 + monthly_interest_rate) ** tenure_months - 1)
+        monthly_remain = emi - monthly_interest
+        added_principle = monthly_remain - moro_pay + monthly_interest
+        remaining += added_principle
 
+        schedule.append({
+            "Month": tenure_months,
+            "Opening Balance": round(remaining, 2),
+            "Monthly Interest": round(monthly_interest, 2),
+            "EMI": round(emi, 2),
+            "Added Principle": round(added_principle, 2),
+            "Closing Balance": round(remaining, 2) if remaining > 0 else 0
+        })
+
+        tenure_months -= 1
+        moro_months -= 1
+
+    total_interest_paid = 0
+
+    while tenure_months > 0:
+        monthly_interest = remaining * monthly_interest_rate
+        emi = remaining * monthly_interest_rate * ((1 + monthly_interest_rate) ** tenure_months) / (
+                    (1 + monthly_interest_rate) ** tenure_months - 1)
+
+        if monthly_amount > 0:
+            principle = monthly_amount - monthly_interest
+        else:
+            principle = emi - monthly_interest
+
+        remaining = remaining - principle
+        total_interest_paid += monthly_interest
+        tenure_months -= 1
+
+        schedule.append({
+            "Month": tenure_months,
+            "Opening Balance": round(remaining, 2),
+            "Monthly Interest": round(monthly_interest, 2),
+            "EMI": round(emi, 2),
+            "Monthly Payment": round(monthly_amount if monthly_amount > 0 else emi, 2),
+            "Principal/EMI Payment": round(principle, 2) if remaining > 0 else 'Balance Adjusted',
+            "Closing Balance": round(remaining, 2) if remaining > 0 else 0
+        })
+
+        if remaining < 0:
+            break
+
+    return schedule, f'Loan completed {tenure_months} months before tenure', total_interest_paid
 
 # Streamlit app
 def main():
@@ -107,7 +74,8 @@ def main():
         schedule, completion_message, total_interest = amortization(loan_amount, annual_interest_rate, loan_tenure,
                                                                     monthly_payment, moratorium_months, moratorium_payment)
         st.subheader("Amortization Schedule")
-        st.dataframe(schedule)
+        df_schedule = pd.DataFrame(schedule)
+        st.dataframe(df_schedule)
 
         st.subheader("Summary")
         st.write(completion_message)
