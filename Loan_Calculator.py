@@ -43,18 +43,19 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
         total_interest_paid += monthly_interest
         tenure_months -= 1
 
+
+        if remaining < 0:
+            break
+            
         schedule.append({
             "Month": tenure_months,
             "Opening Balance": round(remaining, 2) if remaining > 0 else 0,
             "Monthly Interest": round(monthly_interest, 2) if remaining > 0 else 0,
             "EMI": round(emi, 2) if remaining > 0 else 0,
-            "Monthly Payment": round(monthly_amount if monthly_amount > 0 and remaining > 0 else emi, 2),
+            "Monthly Payment": round(monthly_amount if monthly_amount > 0 else emi, 2),
             "Principal/EMI Payment": round(principle, 2) if remaining > 0 else 'Balance Adjusted',
             "Closing Balance": round(remaining, 2) if remaining > 0 else 0
         })
-
-        if remaining < 0:
-            break
 
     return schedule, f'Loan completed {tenure_months} months before tenure', total_interest_paid
 
