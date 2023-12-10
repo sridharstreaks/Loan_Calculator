@@ -13,47 +13,47 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
     remaining_balance = loan_amount
     schedule = []
 
-    # Inside the loop for calculating the loan schedule
-for month in range(1, total_months + 1):
-    # Calculate interest for the month
-    monthly_interest = remaining_balance * monthly_interest_rate
+        # Inside the loop for calculating the loan schedule
+    for month in range(1, total_months + 1):
+        # Calculate interest for the month
+        monthly_interest = remaining_balance * monthly_interest_rate
+    
+        if month <= interest_only_months:
+            moratorium_payment = moratorium_monthly_payment  # Fixed initial payment during the interest-only period
+        elif monthly_payment == 0:
+            # Use the standard EMI for the current month
+            remaining_months = total_months - month + 1
+    
+            # Calculate principal payment
+            principal_payment = calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_months, 0, moratorium_monthly_payment)
+    
+            # Update the remaining balance
+            remaining_balance -= principal_payment
+    
+            moratorium_payment = principal_payment  # Set moratorium payment to the principal payment for standard EMI
+        else:
+            moratorium_payment = monthly_payment
+    
+            # Calculate principal payment
+            principal_payment = moratorium_payment - monthly_interest
+    
+            # Update the remaining balance
+            remaining_balance -= principal_payment
+    
+        # Create a table entry
+        schedule.append({
+            "Month": month,
+            "Opening Balance": round(remaining_balance + principal_payment, 2),
+            "Monthly Interest": round(monthly_interest, 2),
+            "Moratorium Payment": round(moratorium_payment, 2),
+            "Principal Payment": round(principal_payment, 2),
+            "Closing Balance": round(remaining_balance, 2)
+        })
 
-    if month <= interest_only_months:
-        moratorium_payment = moratorium_monthly_payment  # Fixed initial payment during the interest-only period
-    elif monthly_payment == 0:
-        # Use the standard EMI for the current month
-        remaining_months = total_months - month + 1
+        if remaining_balance <= 0:
+            break
 
-        # Calculate principal payment
-        principal_payment = calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_months, 0, moratorium_monthly_payment)
-
-        # Update the remaining balance
-        remaining_balance -= principal_payment
-
-        moratorium_payment = principal_payment  # Set moratorium payment to the principal payment for standard EMI
-    else:
-        moratorium_payment = monthly_payment
-
-        # Calculate principal payment
-        principal_payment = moratorium_payment - monthly_interest
-
-        # Update the remaining balance
-        remaining_balance -= principal_payment
-
-    # Create a table entry
-    schedule.append({
-        "Month": month,
-        "Opening Balance": round(remaining_balance + principal_payment, 2),
-        "Monthly Interest": round(monthly_interest, 2),
-        "Moratorium Payment": round(moratorium_payment, 2),
-        "Principal Payment": round(principal_payment, 2),
-        "Closing Balance": round(remaining_balance, 2)
-    })
-
-    if remaining_balance <= 0:
-        break
-
-return pd.DataFrame(schedule)
+    return pd.DataFrame(schedule)
 
 # Function to calculate the standard EMI for a given remaining balance
 def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_tenure_months, remaining_interest_only_months, moratorium_monthly_payment):
