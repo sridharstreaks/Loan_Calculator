@@ -65,10 +65,6 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
         # Display a message indicating that the loan can't be settled within the provided tenure
         st.subheader("Loan Settlement Information")
         st.write("**Loan can't be settled within the provided tenure.**")
-    
-    # Display the loan schedule
-    st.subheader("Loan Repayment Schedule")
-    st.dataframe(schedule)
         
 
     return pd.DataFrame(schedule)
