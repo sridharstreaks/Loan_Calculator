@@ -16,6 +16,7 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
         remaining += added_principle
 
         schedule.append({
+            "Month": tenure_months,
             "Opening Balance": round(remaining, 2),
             "Monthly Interest": round(monthly_interest, 2),
             "Monthly Remaining": round(monthly_remain, 2),
@@ -25,7 +26,7 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
 
         tenure_months -= 1
         moro_months -= 1
-
+        
     total_interest_paid = 0
 
     while tenure_months > 0:
@@ -33,6 +34,7 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
         emi = remaining * monthly_interest_rate * ((1 + monthly_interest_rate) ** tenure_months) / (
                     (1 + monthly_interest_rate) ** tenure_months - 1)
         schedule.append({
+            "Month": tenure_months,
             "Opening Balance": round(remaining, 2),
             "Monthly Interest": round(monthly_interest, 2),
         })
@@ -57,29 +59,27 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
 
     return schedule, "Loan completed {} months before tenure".format(tenure_months), total_interest_paid
 
+# Streamlit app
 def main():
     st.title("Amortization Schedule Calculator")
 
-    # Sidebar inputs
-    loan_amount = st.number_input("Loan Amount (INR) [Mandatory]", min_value=0)
-    annual_interest_rate = st.number_input("Annual Interest Rate (%) [Mandatory]", min_value=0.0, step=1e-3, format="%.2f")
-    tenure_years = st.number_input("Loan Tenure (years) [Mandatory]", min_value=0)
-    moratorium_months = st.number_input("Moratorium Months [Optional]", min_value=0)
-    monthly_payment = st.number_input("Monthly Payment (INR) [Optional]", min_value=0)
-    moratorium_payment = st.number_input("Moratorium Payment (INR) [Optional]", min_value=0)
+    # Input parameters
+    loan_amount = st.number_input("Loan Amount (INR)", min_value=0)
+    annual_interest_rate = st.number_input("Annual Interest Rate (%)", min_value=0.0, step=0.01, format="%.2f")
+    loan_tenure = st.number_input("Loan Tenure (years)", min_value=0)
+    monthly_payment = st.number_input("Monthly Payment (INR)", min_value=0)
+    moratorium_months = st.number_input("Moratorium Months", min_value=0)
+    moratorium_payment = st.number_input("Moratorium Payment (INR)", min_value=0)
 
     if st.button("Calculate"):
-        schedule_result, message, total_interest_paid = amortization(
-            loan_amount, annual_interest_rate, tenure_years, monthly_payment, moratorium_months, moratorium_payment
-        )
-
-        # Display the results
+        schedule, completion_message, total_interest = amortization(loan_amount, annual_interest_rate, loan_tenure,
+                                                                    monthly_payment, moratorium_months, moratorium_payment)
         st.subheader("Amortization Schedule")
-        st.dataframe(schedule_result)
+        st.dataframe(schedule)
 
         st.subheader("Summary")
-        st.write(message)
-        st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
+        st.write(completion_message)
+        st.write(f"Total Interest Paid: {round(total_interest, 2)} INR")
 
 if __name__ == "__main__":
     main()
