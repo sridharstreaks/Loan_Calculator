@@ -19,7 +19,6 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
             "Month": tenure_months,
             "Opening Balance": round(remaining, 2),
             "Monthly Interest": round(monthly_interest, 2),
-            "Monthly Remaining": round(monthly_remain, 2),
             "Added Principle": round(added_principle, 2),
             "Closing Balance": round(remaining, 2) if remaining > 0 else 0
         })
