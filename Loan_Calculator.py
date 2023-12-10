@@ -17,12 +17,12 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
         # Calculate interest for the month
         monthly_interest = remaining_balance * monthly_interest_rate
 
-        # Determine the moratorium payment for the month
         if month <= interest_only_months:
             moratorium_payment = moratorium_monthly_payment  # Fixed initial payment during the interest-only period
         elif monthly_payment == 0:
-            # Use the standard EMI for the current month
+        # Use the standard EMI for the current month
             remaining_months = total_months - month + 1
+        # Move the calculation of standard EMI inside the loop
             standard_emi = calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_months, 0, moratorium_monthly_payment)
             moratorium_payment = standard_emi
         else:
@@ -49,34 +49,39 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
 
     return pd.DataFrame(schedule)
 
-# Function to calculate the standard EMI for a given remaining balance
-def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_tenure_months, remaining_interest_only_months, moratorium_monthly_payment):
-    # Convert annual interest rate to monthly rate
-    monthly_interest_rate = (annual_interest_rate / 12) / 100
-
-    # Calculate the EMI using the standard formula for the remaining balance
-    emi = (remaining_balance * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -remaining_tenure_months)
-
-    return emi
     
 # Streamlit app
 def main():
     st.title("Loan Repayment Schedule Calculator")
+
+    # Variable descriptions on the main page
+    st.markdown("### Loan Amount (INR) [Mandatory]")
+    st.write("The total amount of the loan.")
+
+    st.markdown("### Annual Interest Rate (%) [Mandatory]")
+    st.write("The annual interest rate for the loan.")
+
+    st.markdown("### Loan Tenure (years) [Mandatory]")
+    st.write("The duration of the loan in years.")
+
+    st.markdown("### Interest-only Months [Optional]")
+    st.write("Number of months with interest-only payments.")
+
+    st.markdown("### Monthly Payment (INR) [Optional]")
+    st.write("The fixed monthly payment towards the loan. If left as 0, standard EMI will be used.")
+
+    st.markdown("### Moratorium Payment (INR) [Optional]")
+    st.write("Fixed initial payment during the moratorium period.")
+
     st.sidebar.title("Loan Parameters")
 
     # Sidebar inputs
-    loan_amount = st.sidebar.number_input("Loan Amount (INR)", min_value=0)
-    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0.0, step=1e-3, format="%.2f")
-    tenure_years = st.sidebar.number_input("Loan Tenure (years)", min_value=0)
-    interest_only_months = st.sidebar.number_input("Interest-only Months", min_value=0)
-    monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0)
-    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR)", min_value=0)
-    
-    # Add input for bulk payment
-    bulk_payment_option = st.sidebar.checkbox("Make Bulk Payment")
-    if bulk_payment_option:
-        bulk_payment_amount = st.sidebar.number_input("Bulk Payment Amount (INR)", min_value=0)
-        bulk_payment_month = st.sidebar.number_input("Month for Bulk Payment", min_value=1, max_value=tenure_years * 12)
+    loan_amount = st.sidebar.number_input("Loan Amount (INR) [Mandatory]", min_value=0)
+    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%) [Mandatory]", min_value=0.0, step=1e-3, format="%.2f")
+    tenure_years = st.sidebar.number_input("Loan Tenure (years) [Mandatory]", min_value=0)
+    interest_only_months = st.sidebar.number_input("Interest-only Months [Optional]", min_value=0)
+    monthly_payment = st.sidebar.number_input("Monthly Payment (INR) [Optional]", min_value=0)
+    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR) [Optional]", min_value=0)
 
     if st.sidebar.button("Calculate"):
         if monthly_payment == 0:
@@ -88,10 +93,6 @@ def main():
         else:
             # Calculate the loan schedule with the user-provided monthly payment
             schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
-
-        # Check if a bulk payment is specified and calculate the loan schedule with it
-        if bulk_payment_option and bulk_payment_amount > 0:
-            schedule_result = apply_bulk_payment(schedule_result, bulk_payment_month, bulk_payment_amount)
 
         # Check if it's a string message indicating loan won't be settled
         if isinstance(schedule_result, str):
@@ -109,16 +110,6 @@ def main():
             st.subheader("Loan Repayment Schedule")
             st.dataframe(schedule_result)
 
-# Function to apply bulk payment to the loan schedule
-def apply_bulk_payment(schedule, bulk_payment_month, bulk_payment_amount):
-    if bulk_payment_month <= len(schedule):
-        # Deduct the bulk payment from the closing balance of the specified month
-        schedule.loc[bulk_payment_month - 1, "Closing Balance"] -= bulk_payment_amount
-        # Set the principal payment to be equal to the bulk payment amount for that month
-        schedule.loc[bulk_payment_month - 1, "Principal Payment"] = bulk_payment_amount
-        return schedule
-    else:
-        return "Invalid bulk payment month. Please select a valid month."
 
 if __name__ == "__main__":
     main()
