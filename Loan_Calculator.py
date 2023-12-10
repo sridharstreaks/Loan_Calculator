@@ -53,7 +53,7 @@ for month in range(1, total_months + 1):
     if remaining_balance <= 0:
         break
 
-    return pd.DataFrame(schedule)
+return pd.DataFrame(schedule)
 
 # Function to calculate the standard EMI for a given remaining balance
 def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_tenure_months, remaining_interest_only_months, moratorium_monthly_payment):
