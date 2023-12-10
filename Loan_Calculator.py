@@ -60,17 +60,38 @@ def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_te
     return emi
     
 #Streamlit app
+# Streamlit app
 def main():
     st.title("Loan Repayment Schedule Calculator")
+
+    # Variable descriptions on the main page
+    st.markdown("### Loan Amount (INR) [Mandatory]")
+    st.write("The total amount of the loan.")
+
+    st.markdown("### Annual Interest Rate (%) [Mandatory]")
+    st.write("The annual interest rate for the loan.")
+
+    st.markdown("### Loan Tenure (years) [Mandatory]")
+    st.write("The duration of the loan in years.")
+
+    st.markdown("### Interest-only Months [Optional]")
+    st.write("Number of months with interest-only payments.")
+
+    st.markdown("### Monthly Payment (INR) [Optional]")
+    st.write("The fixed monthly payment towards the loan. If left as 0, standard EMI will be used.")
+
+    st.markdown("### Moratorium Payment (INR) [Optional]")
+    st.write("Fixed initial payment during the moratorium period.")
+
     st.sidebar.title("Loan Parameters")
 
     # Sidebar inputs
-    loan_amount = st.sidebar.number_input("Loan Amount (INR)", min_value=0)
-    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%)", min_value=0.0, step=1e-3, format="%.2f")
-    tenure_years = st.sidebar.number_input("Loan Tenure (years)", min_value=0)
-    interest_only_months = st.sidebar.number_input("Interest-only Months", min_value=0)
-    monthly_payment = st.sidebar.number_input("Monthly Payment (INR)", min_value=0)
-    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR)", min_value=0)
+    loan_amount = st.sidebar.number_input("Loan Amount (INR) [Mandatory]", min_value=0)
+    annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%) [Mandatory]", min_value=0.0, step=1e-3, format="%.2f")
+    tenure_years = st.sidebar.number_input("Loan Tenure (years) [Mandatory]", min_value=0)
+    interest_only_months = st.sidebar.number_input("Interest-only Months [Optional]", min_value=0)
+    monthly_payment = st.sidebar.number_input("Monthly Payment (INR) [Optional]", min_value=0)
+    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR) [Optional]", min_value=0)
 
     if st.sidebar.button("Calculate"):
         if monthly_payment == 0:
