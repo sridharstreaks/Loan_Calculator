@@ -1,157 +1,88 @@
 import streamlit as st
-import pandas as pd
 
-# Function to calculate loan schedule
-def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment):
-    # Convert annual interest rate to monthly rate
-    monthly_interest_rate = (annual_interest_rate / 12) / 100
+def ammortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_pay):
+    monthly_interest_rate = (interest_rate / 12) / 100
+    tenure_months = tenure * 12
 
-    # Convert tenure in years to months
-    total_months = tenure_years * 12
+    emi = loan * monthly_interest_rate * ((1 + monthly_interest_rate) ** tenure_months) / (
+            (1 + monthly_interest_rate) ** tenure_months - 1
+    )
 
-    # Initialize variables
-    remaining_balance = loan_amount
+    remaining = loan
+    counter = 0
+
+    # Precompute components that don't change in the loop
+    monthly_interest = remaining * monthly_interest_rate
+    emi_minus_interest = emi - monthly_interest
+
     schedule = []
 
-    for month in range(1, total_months + 1):
-        # Calculate interest for the month
-        monthly_interest = remaining_balance * monthly_interest_rate
+    while moro_months > 0:
+        added_principle = emi_minus_interest - moro_pay
 
-        # Determine the moratorium payment for the month
-        if month <= interest_only_months:
-            moratorium_payment = moratorium_monthly_payment  # Fixed initial payment during the interest-only period
-        elif monthly_payment == 0:
-            # Use the standard EMI for the current month
-            remaining_months = total_months - month + 1
-            standard_emi = calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_months, interest_only_months, moratorium_monthly_payment)
-            moratorium_payment = standard_emi
+        remaining += added_principle
+
+        tenure_months -= counter
+        counter += 1
+        moro_months -= 1
+
+    total_interest_paid = 0
+
+    while tenure_months > 0:
+        monthly_interest = remaining * monthly_interest_rate
+        emi_minus_interest = emi - monthly_interest
+
+        if monthly_amount > 0:
+            principle = monthly_amount - monthly_interest
         else:
-            moratorium_payment = monthly_payment
-            
-        # Calculate principal payment
-        principal_payment = moratorium_payment - monthly_interest
+            principle = emi_minus_interest
 
-        # Update the remaining balance
-        remaining_balance -= principal_payment
+        remaining -= principle
 
-        # Create a table entry
+        total_interest_paid += monthly_interest
+
+        tenure_months -= 1
+
+        # Append to the schedule
         schedule.append({
-            "Month": month,
-            "Opening Balance": round(remaining_balance + principal_payment, 2),
-            "Monthly Interest": round(monthly_interest, 2),
-            "Moratorium Payment": round(moratorium_payment, 2),  # Round the EMI to 2 decimal places
-            "Principal Payment": round(principal_payment, 2),
-            "Closing Balance": round(remaining_balance, 2)
+            "Month": tenure_months,
+            "Opening Balance": remaining + principle,
+            "Monthly Interest": monthly_interest,
+            "Monthly Payment": monthly_amount if monthly_amount > 0 else emi,
+            "Principal Payment": principle,
+            "Closing Balance": remaining
         })
 
-        if remaining_balance <= 0:
-             break
-    # Check if the loan is settled or not
-    if remaining_balance <= 0:
-        # Calculate total interest paid and total loan taken
-        total_interest_paid = schedule[-1]['Monthly Interest'].sum()
-    
-        # Display total interest paid and total amount (loan amount + interest paid)
-        st.subheader("Summary")
-        st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
-        st.write(f"Total Loan Taken: {round(loan_amount, 2)} INR")
-    
-        # Display the loan settlement information
-        st.subheader("Loan Settlement Information")
-        settlement_month = schedule[-1]['Month']
-        settlement_year = int(tenure_years) + int((settlement_month - 1) / 12)
-        st.write(f"The loan is settled in {settlement_month}th month of the {settlement_year}th year.")
-    else:
-        # Display a message indicating that the loan can't be settled within the provided tenure
-        st.subheader("Loan Settlement Information")
-        st.write("**Loan can't be settled within the provided tenure.**")
-        
+        if remaining < 0:
+            break
 
-    return pd.DataFrame(schedule)
+    return schedule, total_interest_paid, tenure_months
 
-# Function to calculate the standard EMI for a given remaining balance
-def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_tenure_months, remaining_interest_only_months, moratorium_monthly_payment):
-    # Convert annual interest rate to monthly rate
-    monthly_interest_rate = (annual_interest_rate / 12) / 100
-
-    # Calculate the EMI using the standard formula for the remaining balance
-    emi = (remaining_balance * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -remaining_tenure_months)
-
-    return emi
-
-    
-#Streamlit app
-# Streamlit app
 def main():
-    st.title("Loan Repayment Schedule Calculator")
-
-    # Variable descriptions on the main page
-    st.markdown("### Loan Amount (INR) [Mandatory]")
-    st.write("The total amount of the loan.")
-
-    st.markdown("### Annual Interest Rate (%) [Mandatory]")
-    st.write("The annual interest rate for the loan.")
-
-    st.markdown("### Loan Tenure (years) [Mandatory]")
-    st.write("The duration of the loan in years.")
-
-    st.markdown("### Interest-only Months [Optional]")
-    st.write("Number of months with interest-only payments.")
-
-    st.markdown("### Monthly Payment (INR) [Optional]")
-    st.write("The fixed monthly payment towards the loan. If left as 0, standard EMI will be used.")
-
-    st.markdown("### Moratorium Payment (INR) [Optional]")
-    st.write("Fixed initial payment during the moratorium period.")
-
-    st.sidebar.title("Loan Parameters")
+    st.title("Loan Amortization Calculator")
 
     # Sidebar inputs
     loan_amount = st.sidebar.number_input("Loan Amount (INR) [Mandatory]", min_value=0)
     annual_interest_rate = st.sidebar.number_input("Annual Interest Rate (%) [Mandatory]", min_value=0.0, step=1e-3, format="%.2f")
     tenure_years = st.sidebar.number_input("Loan Tenure (years) [Mandatory]", min_value=0)
-    interest_only_months = st.sidebar.number_input("Interest-only Months [Optional]", min_value=0)
     monthly_payment = st.sidebar.number_input("Monthly Payment (INR) [Optional]", min_value=0)
-    moratorium_monthly_payment = st.sidebar.number_input("Moratorium Payment (INR) [Optional]", min_value=0)
+    moratorium_months = st.sidebar.number_input("Moratorium Months [Optional]", min_value=0)
+    moratorium_payment = st.sidebar.number_input("Moratorium Payment (INR) [Optional]", min_value=0)
 
     if st.sidebar.button("Calculate"):
-        if monthly_payment == 0:
-            # Display a message indicating the standard EMI will be used
-            st.warning("Using standard EMI for the current month.")
-            # Calculate the loan schedule with standard EMI for the current month
-            standard_emi = calculate_standard_emi(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment)
-            schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, standard_emi)
-        else:
-            # Calculate the loan schedule with the user-provided monthly payment
-            schedule_result = calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment, monthly_payment)
+        schedule, total_interest_paid, months_before_completion = ammortization(
+            loan_amount, annual_interest_rate, tenure_years, monthly_payment, moratorium_months, moratorium_payment
+        )
 
-        # Check if it's a string message indicating loan won't be settled
-        if isinstance(schedule_result, str):
-            st.error(schedule_result)  # Display the error message
-        else:
-            # Calculate total interest paid and total loan taken
-            total_interest_paid = schedule_result['Monthly Interest'].sum()
+        # Display total interest paid and months before completion
+        st.subheader("Summary")
+        st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
+        st.write(f"Loan Completed {months_before_completion} months before the tenure.")
 
-            # Display total interest paid and total loan taken
-            st.subheader("Summary")
-            st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
-            st.write(f"Total Loan Taken: {round(loan_amount, 2)} INR")
-
-            # Display the loan schedule
-            st.subheader("Loan Repayment Schedule")
-            st.dataframe(schedule_result)
-
-def calculate_standard_emi(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment):
-    # Convert annual interest rate to monthly rate
-    monthly_interest_rate = (annual_interest_rate / 12) / 100
-
-    # Convert tenure in years to months
-    total_months = tenure_years * 12
-
-    # Calculate the EMI using the standard formula
-    emi = (loan_amount * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -total_months)
-
-    return emi
+        # Display the loan schedule
+        st.subheader("Loan Repayment Schedule")
+        df_schedule = pd.DataFrame(schedule)
+        st.dataframe(df_schedule)
 
 if __name__ == "__main__":
     main()
