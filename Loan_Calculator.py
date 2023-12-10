@@ -26,19 +26,13 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
 
         tenure_months -= 1
         moro_months -= 1
-        
+
     total_interest_paid = 0
 
     while tenure_months > 0:
         monthly_interest = remaining * monthly_interest_rate
         emi = remaining * monthly_interest_rate * ((1 + monthly_interest_rate) ** tenure_months) / (
                     (1 + monthly_interest_rate) ** tenure_months - 1)
-        schedule.append({
-            "Month": tenure_months,
-            "Opening Balance": round(remaining, 2),
-            "Monthly Interest": round(monthly_interest, 2),
-        })
-
         if monthly_amount > 0:
             principle = monthly_amount - monthly_interest
         else:
@@ -49,6 +43,9 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
         tenure_months -= 1
 
         schedule.append({
+            "Month": tenure_months,
+            "Opening Balance": round(remaining, 2),
+            "Monthly Interest": round(monthly_interest, 2),
             "Monthly Payment": round(monthly_amount if monthly_amount > 0 else emi, 2),
             "Principal/EMI Payment": round(principle, 2) if remaining > 0 else 'Balance Adjusted',
             "Closing Balance": round(remaining, 2) if remaining > 0 else 0
@@ -58,6 +55,7 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
             break
 
     return schedule, "Loan completed {} months before tenure".format(tenure_months), total_interest_paid
+
 
 # Streamlit app
 def main():
