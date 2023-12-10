@@ -70,7 +70,7 @@ def main():
     moratorium_payment = st.sidebar.number_input("Moratorium Payment (INR) [Optional]", min_value=0)
 
     if st.sidebar.button("Calculate"):
-        schedule, total_interest_paid, months_before_completion = ammortization(
+        schedule, total_interest_paid, months_before_completion = amortization(
             loan_amount, annual_interest_rate, tenure_years, monthly_payment, moratorium_months, moratorium_payment
         )
 
