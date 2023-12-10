@@ -45,7 +45,27 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
         })
 
         if remaining_balance <= 0:
-            break
+            # Calculate total interest paid and total loan taken
+            total_interest_paid = schedule[-1]['Monthly Interest'].sum()
+        
+            # Display total interest paid and total amount (loan amount + interest paid)
+            st.subheader("Summary")
+            st.write(f"Total Interest Paid: {round(total_interest_paid, 2)} INR")
+            st.write(f"Total Loan Taken: {round(loan_amount, 2)} INR")
+        
+            # Display the loan settlement information
+            st.subheader("Loan Settlement Information")
+            settlement_month = schedule[-1]['Month']
+            settlement_year = int(tenure_years) + int((settlement_month - 1) / 12)
+            st.write(f"The loan is settled in {settlement_month}th month of the {settlement_year}th year.")
+        else:
+            # Display a message indicating that the loan can't be settled within the provided tenure
+            st.subheader("Loan Settlement Information")
+            st.write("**Loan can't be settled within the provided tenure.**")
+        
+        # Display the loan schedule
+        st.subheader("Loan Repayment Schedule")
+        st.dataframe(schedule)
 
     return pd.DataFrame(schedule)
 
