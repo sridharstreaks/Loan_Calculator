@@ -13,43 +13,37 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
     remaining_balance = loan_amount
     schedule = []
 
-    # Inside the loop for calculating the loan schedule
     for month in range(1, total_months + 1):
         # Calculate interest for the month
         monthly_interest = remaining_balance * monthly_interest_rate
-    
+
+        # Determine the moratorium payment for the month
         if month <= interest_only_months:
             moratorium_payment = moratorium_monthly_payment  # Fixed initial payment during the interest-only period
         elif monthly_payment == 0:
             # Use the standard EMI for the current month
             remaining_months = total_months - month + 1
-    
-            # Calculate principal payment
-            principal_payment = calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_months, 0, moratorium_monthly_payment)
-    
-            # Update the remaining balance
-            remaining_balance -= principal_payment
-    
-            moratorium_payment = principal_payment  # Set moratorium payment to the principal payment for standard EMI
+            standard_emi = calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_months, 0, moratorium_monthly_payment)
+            moratorium_payment = standard_emi
         else:
             moratorium_payment = monthly_payment
-    
-            # Calculate principal payment
-            principal_payment = moratorium_payment - monthly_interest
-    
-            # Update the remaining balance
-            remaining_balance -= principal_payment
-    
+
+        # Calculate principal payment
+        principal_payment = moratorium_payment - monthly_interest
+
+        # Update the remaining balance
+        remaining_balance -= principal_payment
+
         # Create a table entry
         schedule.append({
             "Month": month,
             "Opening Balance": round(remaining_balance + principal_payment, 2),
             "Monthly Interest": round(monthly_interest, 2),
-            "Moratorium Payment": round(moratorium_payment, 2),
+            "Moratorium Payment": round(moratorium_payment, 2),  # Round the EMI to 2 decimal places
             "Principal Payment": round(principal_payment, 2),
             "Closing Balance": round(remaining_balance, 2)
         })
-    
+
         if remaining_balance <= 0:
             break
 
@@ -64,8 +58,8 @@ def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_te
     emi = (remaining_balance * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -remaining_tenure_months)
 
     return emi
-
     
+#Streamlit app
 # Streamlit app
 def main():
     st.title("Loan Repayment Schedule Calculator")
@@ -126,6 +120,17 @@ def main():
             st.subheader("Loan Repayment Schedule")
             st.dataframe(schedule_result)
 
+def calculate_standard_emi(loan_amount, annual_interest_rate, tenure_years, interest_only_months, moratorium_monthly_payment):
+    # Convert annual interest rate to monthly rate
+    monthly_interest_rate = (annual_interest_rate / 12) / 100
+
+    # Convert tenure in years to months
+    total_months = tenure_years * 12
+
+    # Calculate the EMI using the standard formula
+    emi = (loan_amount * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -total_months)
+
+    return emi
 
 if __name__ == "__main__":
     main()
