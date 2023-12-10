@@ -1,4 +1,5 @@
 import streamlit as st
+import pandas as pd
 
 def ammortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_pay):
     monthly_interest_rate = (interest_rate / 12) / 100
