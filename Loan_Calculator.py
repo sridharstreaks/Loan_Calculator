@@ -49,6 +49,16 @@ def calculate_loan_schedule(loan_amount, annual_interest_rate, tenure_years, int
 
     return pd.DataFrame(schedule)
 
+# Function to calculate the standard EMI for a given remaining balance
+def calculate_standard_emi(remaining_balance, annual_interest_rate, remaining_tenure_months, remaining_interest_only_months, moratorium_monthly_payment):
+    # Convert annual interest rate to monthly rate
+    monthly_interest_rate = (annual_interest_rate / 12) / 100
+
+    # Calculate the EMI using the standard formula for the remaining balance
+    emi = (remaining_balance * monthly_interest_rate) / (1 - (1 + monthly_interest_rate) ** -remaining_tenure_months)
+
+    return emi
+
     
 # Streamlit app
 def main():
