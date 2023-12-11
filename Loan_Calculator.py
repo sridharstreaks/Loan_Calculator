@@ -55,7 +55,7 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
             "Monthly Payment": round((monthly_amount if monthly_amount > 0 else emi) if remaining > 0 else 0, 2),
             "Closing Balance": round(remaining, 2) if remaining > 0 else 0
         })
-    df_schedule = pd.DataFrame(schedule, index=False)
+    df_schedule = pd.DataFrame(schedule)
     
     return df_schedule, f'Loan completed {tenure_months} months before tenure', total_interest_paid
 
