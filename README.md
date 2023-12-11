@@ -1,4 +1,3 @@
-```markdown
 # Loan Amortization Calculator
 
 ## Overview
