@@ -72,7 +72,7 @@ def main():
     moratorium_payment = st.number_input("Moratorium Payment (INR)", min_value=0)
 
     if st.button("Calculate"):
-        schedule, completion_message, total_interest = amortization(loan_amount, annual_interest_rate, loan_tenure,
+        df_schedule, completion_message, total_interest = amortization(loan_amount, annual_interest_rate, loan_tenure,
                                                                     monthly_payment, moratorium_months, moratorium_payment)
         st.subheader("Amortization Schedule")
         st.table(df_schedule.style.set_table_styles([{
