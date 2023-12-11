@@ -55,8 +55,9 @@ def amortization(loan, interest_rate, tenure, monthly_amount, moro_months, moro_
             "Monthly Payment": round((monthly_amount if monthly_amount > 0 else emi) if remaining > 0 else 0, 2),
             "Closing Balance": round(remaining, 2) if remaining > 0 else 0
         })
-
-    return schedule, f'Loan completed {tenure_months} months before tenure', total_interest_paid
+    df_schedule = pd.DataFrame(schedule, index=False)
+    
+    return df_schedule, f'Loan completed {tenure_months} months before tenure', total_interest_paid
 
 # Streamlit app
 def main():
@@ -74,7 +75,6 @@ def main():
         schedule, completion_message, total_interest = amortization(loan_amount, annual_interest_rate, loan_tenure,
                                                                     monthly_payment, moratorium_months, moratorium_payment)
         st.subheader("Amortization Schedule")
-        df_schedule = pd.DataFrame(schedule, index=False)
         st.table(df_schedule.style.set_table_styles([{
             'selector': 'table',
             'props': [('max-width', '100%')]
