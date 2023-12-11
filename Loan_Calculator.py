@@ -74,8 +74,11 @@ def main():
         schedule, completion_message, total_interest = amortization(loan_amount, annual_interest_rate, loan_tenure,
                                                                     monthly_payment, moratorium_months, moratorium_payment)
         st.subheader("Amortization Schedule")
-        df_schedule = pd.DataFrame(schedule)
-        st.dataframe(df_schedule)
+        df_schedule = pd.DataFrame(schedule, index=False)
+        st.table(df_schedule.style.set_table_styles([{
+            'selector': 'table',
+            'props': [('max-width', '100%')]
+        }]))
 
         st.subheader("Summary")
         st.write(completion_message)
